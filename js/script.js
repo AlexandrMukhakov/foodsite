@@ -1,145 +1,147 @@
 window.addEventListener("DOMContentLoaded", () => {
 
-//tabs
+
+    //tabs
+
     const tabs = document.querySelectorAll(".tabheader__item"),
         tabsContent = document.querySelectorAll(".tabcontent"),
         tabsParent = document.querySelector(".tabheader__items");
 
-
-        function hideTabContent() {
-            tabsContent.forEach((item) => {
+        function hideTabsContent() {
+            tabsContent.forEach(item => {
                 item.classList.add("hide", "fade");
                 item.classList.remove("show");
             });
-            tabs.forEach((item) => {
+            tabs.forEach(item => {
                 item.classList.remove("tabheader__item_active");
             });
         }
 
-        function showTabContent(i = 0) {
+        function showTabsContent(i = 0) {
             tabsContent[i].classList.add("show", "fade");
             tabsContent[i].classList.remove("hide");
             tabs[i].classList.add("tabheader__item_active");
         }
 
-        hideTabContent();
-        showTabContent();
+        hideTabsContent();
+        showTabsContent();
 
         tabsParent.addEventListener("click", (e) => {
             const target = e.target;
-            if (target && target.classList.contains("tabheader__item")) {
+            if(target && target.classList.contains("tabheader__item")) {
                 tabs.forEach((item, i) => {
-                    if (item == target) {
-                        hideTabContent();
-                        showTabContent(i);
+                    if(item == target) {
+                        hideTabsContent();
+                        showTabsContent(i);
                     }
                 });
             }
         });
+
+
+
+
         
 //timer
 
-      const deadLine ="2022-03-02";
+     const deadllne = "2022-03-20";
+     
+     function getTimeRemaining(endTime) {
+        const t = Date.parse(endTime) - Date.parse(new Date()),
+        days = Math.floor(t / (1000 * 60 * 60 *24)),
+        hours = Math.floor((t / (1000 * 60 * 60) % 24)),
+        minutes = Math.floor((t / 1000 / 60) % 60),
+        seconds = Math.floor((t / 1000) % 60);
 
-      function getTimeRemaining(endTime) {
-          const t = Date.parse(endTime) - Date.parse(new Date()),
-                days = Math.floor(t / (1000 * 60 * 60 *24)),
-                hours = Math.floor((t / (1000 * 60 * 60) % 24)),
-                minutes = Math.floor((t / 1000 / 60) % 60),
-                seconds = Math.floor((t / 1000) % 60);
+        return {
+            "total": t,
+            "days": days,
+            "hours": hours,
+            "minutes": minutes,
+            "seconds": seconds
+        };
+     }
 
-                return {
-                    "total": t,
-                    "days": days,
-                    "hours": hours,
-                    'minutes': minutes,
-                    "seconds": seconds
-                };
-      }
+     function getZero(num) {
+         if (num >=0 && num < 10) {
+             return `0${num}`;
+         }
+         else {
+             return num;
+         }
+     }
 
-      function getZero(num) {
-          if (num >= 0 && num < 10) {
-              return `0${num}`;
-          } else {
-              return num;
-          }
-      }
-
-      function setClock(selector, endTime) {
+     function setClock(selector, endtime) {
         const timer = document.querySelector(selector),
             days = timer.querySelector("#days"),
             hours = timer.querySelector("#hours"),
             minutes = timer.querySelector("#minutes"),
             seconds = timer.querySelector("#seconds"),
-            timerID = setInterval(updateClock, 1000);
+            timerId = setInterval(updateClock, 1000);
             updateClock();
 
-
             function updateClock() {
-                const t = getTimeRemaining(endTime);
+                const t = getTimeRemaining(endtime);
                 days.innerHTML = getZero(t.days);
                 hours.innerHTML = getZero(t.hours);
                 minutes.innerHTML = getZero(t.minutes);
                 seconds.innerHTML = getZero(t.seconds);
-
                 if (t <= 0) {
-                    clearInterval(timerID);
+                    clearInterval(timerId);
                 }
             }
+     }
+setClock(".timer", deadllne);
 
-      }
 
-setClock(".timer", deadLine);
 
 
 //modalwindov
 
-const modalTrigger = document.querySelectorAll("[data-modal]"),
-      modal = document.querySelector(".modal"),
-      modalClose = document.querySelector("[data-close]");
+const btnModal = document.querySelectorAll("[data-modal]"),
+     modalContent = document.querySelector(".modal");
+     
+     const openModalForTime = setTimeout(openModal, 50000);
 
-      function openModal() {
-        modal.classList.add("show");
-        modal.classList.remove("hide");
-        document.body.style.overflow = "hidden";
-        clearInterval(modalTimerId);
-      }
+     function openModal() {
+         modalContent.classList.add("show");
+         modalContent.classList.remove("hide");
+         document.body.style.overflow = "hidden";
+         const q = clearInterval(openModalForTime);
+     }
 
-modalTrigger.forEach((btn) => {
-    btn.addEventListener("click", openModal);
-});
+     btnModal.forEach(item => {
+         item.addEventListener("click", openModal);
+     });
 
-function closeModal() {
-    modal.classList.add("hide");
-    modal.classList.remove("show");
-    document.body.style.overflow = "";
-}
-
-modalClose.addEventListener("click", closeModal);
-
-modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
-});
-
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Escape" && modal.classList.contains("show")) {
-        closeModal();
-    }
-});
-
-// const modalTimerId = setTimeout(openModal, 5000);
+     function closeModal() {
+         modalContent.classList.add("hide");
+         modalContent.classList.remove("show");
+         document.body.style.overflow = "";
+     }
 
 
-function showModalBYScroll() {
-    if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight - 1) {
-        openModal();
-        window.removeEventListener("scroll", showModalBYScroll);
-    }
-}
+     modalContent.addEventListener("click", (e) => {
+         if(e.target === modalContent || e.target.getAttribute("data-close") == "") {
+             closeModal();
+         }
+     });
 
-window.addEventListener("scroll", showModalBYScroll);
+     document.addEventListener("keydown", (e) => {
+         if (e.code == "Escape" && modalContent.classList.contains("show")) {
+             closeModal();
+         }
+     });
+
+    window.addEventListener("scroll", () => {
+        if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
+            openModal();
+        }
+    });
+
+    
+
+
 
 
 //class foe card
@@ -207,8 +209,92 @@ new MenuCard("img/tabs/post.jpg",
 
 
 
+//form
+
+const forms = document.querySelectorAll("form");
 
 
+forms.forEach(item => {
+    postForm(item);
+});
+
+const messege = {
+    loading: "Загрузка",
+    success: "Спасибо мы с вами свяжемся",
+    fals: "Что-то пошло не так"
+};
+
+function postForm(form) {
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const messegText = document.createElement("div");
+        messegText.classList.add("status");
+        messegText.textContent = messegText.loading;
+        form.append(messegText);
+        
+        const formData = new FormData(form);
+
+        const obj = {};
+        formData.forEach(function(value, key) {
+            obj[key] = value;
+        });
+
+
+        fetch("server.php", {
+            method: "POST",
+            headers: { "Content-type": "application/json" },
+            body: JSON.stringify(obj)
+        }).then(data => data.text())
+        .then(data => {
+            console.log(data);
+            showThanksModal(messege.success);
+            messegText.remove();
+        }).catch(() => {
+            showThanksModal(messege.fals);
+        }).finally(() => {
+            form.reset();
+        });
+
+
+    });
+}
+
+function showThanksModal(mess) {
+    const prevModalDialog = document.querySelector(".modal__dialog");
+
+    prevModalDialog.classList.add("hide");
+    openModal();
+
+    const thanksModal = document.createElement("div");
+    thanksModal.classList.add("modal__dialog");
+
+    thanksModal.innerHTML = `
+    <div class="modal__content">
+    <div class='modal__close' data-close>×</div>
+    <div class="modal__title">${mess}</div>
+    </div>
+    `;
+
+    document.querySelector(".modal").append(thanksModal);
+    setTimeout(() => {
+        thanksModal.remove();
+        prevModalDialog.classList.add("show");
+        prevModalDialog.classList.remove("hide");
+        closeModal();
+    }, 4000);
+}
+
+
+fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: "POST",
+    body: JSON.stringify({name: 'Alex'}),
+    headers: {
+        "Content-type": "aplication/json"
+    }
+})
+  .then(response => response.json())
+  .then(json => console.log(json));
 
 
 
