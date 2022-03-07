@@ -142,8 +142,6 @@ const btnModal = document.querySelectorAll("[data-modal]"),
     
 
 
-
-
 //class foe card
 
 class MenuCard{
@@ -183,30 +181,21 @@ class MenuCard{
     }
 
 }
-new MenuCard("img/tabs/vegy.jpg", 
-"vegy", 
-`Меню "Фитнес"`, 
-`Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!`, 
-9, 
-".menu .container",
-).render();
 
-new MenuCard("img/tabs/elite.jpg", 
-"elite", 
-`Меню “Премиум”`, 
-`В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!`, 
-7, 
-".menu .container", 
-).render();
+const getResurs = async (url) => {
+    const res = await fetch(url);
+    if(!res.ok) {
+        throw new Error("Ты лох");
+    }
+    return await res.json();
+};
 
-new MenuCard("img/tabs/post.jpg", 
-"post", 
-`Меню "Постное"`, 
-`Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.`, 
-10, 
-".menu .container", 
-).render();
-
+getResurs(`http://localhost:3000/menu`)
+.then(data => {
+    data.forEach(({img, altimg, title, descr, price}) => {
+        new MenuCard(img, altimg, title, descr, price, ".menu .container").render();
+    });
+});
 
 
 //form
@@ -215,7 +204,7 @@ const forms = document.querySelectorAll("form");
 
 
 forms.forEach(item => {
-    postForm(item);
+    bindPostForm(item);
 });
 
 const messege = {
@@ -224,7 +213,18 @@ const messege = {
     fals: "Что-то пошло не так"
 };
 
-function postForm(form) {
+const postData = async (url, data) => {
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: data
+    });
+    return await res.json();
+};
+
+function bindPostForm(form) {
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -235,17 +235,9 @@ function postForm(form) {
         
         const formData = new FormData(form);
 
-        const obj = {};
-        formData.forEach(function(value, key) {
-            obj[key] = value;
-        });
+        const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-
-        fetch("server.php", {
-            method: "POST",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(obj)
-        }).then(data => data.text())
+        postData("http://localhost:3000/requests", json)
         .then(data => {
             console.log(data);
             showThanksModal(messege.success);
@@ -286,21 +278,156 @@ function showThanksModal(mess) {
 }
 
 
-fetch('https://jsonplaceholder.typicode.com/posts', {
-    method: "POST",
-    body: JSON.stringify({name: 'Alex'}),
-    headers: {
-        "Content-type": "aplication/json"
+// fetch('https://jsonplaceholder.typicode.com/posts', {
+//     method: "POST",
+//     body: JSON.stringify({name: 'Alex'}),
+//     headers: {
+//         "Content-type": "aplication/json"
+//     }
+// })
+//   .then(response => response.json())
+//   .then(json => console.log(json));
+
+
+// fetch(`http://localhost:3000/menu`)
+// .then(data => data.json())
+// .then(res => console.log(res));
+
+//slide
+
+const slide = document.querySelectorAll(".offer__slide"),
+    prev = document.querySelector(".offer__slider-prev"),
+    next = document.querySelector(".offer__slider-next"),
+    total = document.querySelector("#total"),
+    current = document.querySelector("#current"),
+    slideWraper = document.querySelector(".offer__slider-wrapper"),
+    slidesFild = document.querySelector(".offer__slide__inner"),
+    width = window.getComputedStyle(slideWraper).width;
+
+  let index = 1;
+  let offset = 0;
+
+  if (slide.length < 10) {
+    total.textContent = `0${slide.length}`;
+    current.textContent = `0${index}`;
+} else {
+    total.textContent = slide.length;
+    current.textContent = index;
+}
+
+ slidesFild.style.width = 100 * slide.length + "%";
+
+ slidesFild.style.display = "flex";
+ slidesFild.style.transition = `0.5s all`;
+ slideWraper.style.overflow = "hidden";
+
+ slide.forEach(item => {
+    item.style.width = width;
+ });
+
+ next.addEventListener("click", () => {
+     if (offset == +width.slice(0, width.length - 2) * (slide.length - 1)) {
+         offset = 0;
+     } else {
+         offset += +width.slice(0, width.length - 2);
+     }
+
+    slidesFild.style.transform = `translateX(-${offset}px)`;
+    if (index == slide.length) {
+        index = 1;
+    } else {
+        index++;
     }
-})
-  .then(response => response.json())
-  .then(json => console.log(json));
+
+    if (slide.length < 10) {
+        current.textContent = `0${index}`;
+    } else {
+        current.textContent = index;
+    }
+ });
+
+ prev.addEventListener("click", () => {
+    if (offset == 0) {  
+        offset = +width.slice(0, width.length - 2) * (slide.length - 1);
+    } else {
+        offset -= +width.slice(0, width.length - 2);
+    }
+
+   slidesFild.style.transform = `translateX(-${offset}px)`;
+
+   if (index == 1) {
+    index = slide.length;
+} else {
+    index--;
+}
+
+if (slide.length < 10) {
+    current.textContent = `0${index}`;
+} else {
+    current.textContent = index;
+}
+});
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//   showSlide(index);
+
+//   if (slide.length < 10) {
+//       total.textContent = `0${slide.length}`;
+//   } else {
+//       total.textContent = slide.length;
+//   }
+
+//   function showSlide(n) {
+//       if (n > slide.length) {
+//           index = 1;
+//       }
+//       if (n < 1) {
+//           index = slide.length;
+//       }
+
+//       slide.forEach(item => {
+//         item.classList.add("hide");
+//         item.classList.remove("show");
+//       });
+//       slide[index - 1].classList.add("show");
+//       slide[index - 1].classList.remove("hide");
+
+//       if (slide.length < 10) {
+//           current.textContent = `0${index}`;
+//       } else {
+//           current.textContent = index;
+//       }
+//   }
+
+//   function plusSlide(n) {
+//       showSlide(index += n);
+//   }
+
+//   prev.addEventListener("click", () => {
+//     plusSlide(-1);
+//   });
+//   next.addEventListener("click", () => {
+//     plusSlide(1);
+//   });
 
 
 });
