@@ -296,6 +296,7 @@ function showThanksModal(mess) {
 //slide
 
 const slide = document.querySelectorAll(".offer__slide"),
+    slider = document.querySelector(".offer__slider"),
     prev = document.querySelector(".offer__slider-prev"),
     next = document.querySelector(".offer__slider-next"),
     total = document.querySelector("#total"),
@@ -307,76 +308,117 @@ const slide = document.querySelectorAll(".offer__slide"),
   let index = 1;
   let offset = 0;
 
-  if (slide.length < 10) {
-    total.textContent = `0${slide.length}`;
-    current.textContent = `0${index}`;
-} else {
-    total.textContent = slide.length;
-    current.textContent = index;
-}
+   slidesFild.style.width = 100 * slide.length + "%";
+   slidesFild.style.display = "flex";
+   slidesFild.style.transition = "0.5s all";
+   slideWraper.style.overflow = "hidden";
 
- slidesFild.style.width = 100 * slide.length + "%";
+   slide.forEach(item => {
+    item.width = width;
+   });
 
- slidesFild.style.display = "flex";
- slidesFild.style.transition = `0.5s all`;
- slideWraper.style.overflow = "hidden";
+   slider.style.position = `relative`;
+   const indicators = document.createElement("ol");
+   indicators.classList.add(`carousel-indicators`);
+   slider.append(indicators);
+   const dots = [];
 
- slide.forEach(item => {
-    item.style.width = width;
- });
+   for (let i = 0; i < slide.length; i++) {
+       const dot = document.createElement("li");
+       dot.classList.add("dot");
+       dot.setAttribute("data-slide-to", i + 1);
+       indicators.append(dot);
 
- next.addEventListener("click", () => {
-     if (offset == +width.slice(0, width.length - 2) * (slide.length - 1)) {
-         offset = 0;
-     } else {
-         offset += +width.slice(0, width.length - 2);
-     }
+       if (i == 0) {
+           dot.style.opacity = 1;
+       }
+       dots.push(dot);
+   }
 
-    slidesFild.style.transform = `translateX(-${offset}px)`;
-    if (index == slide.length) {
+   if (slide.length < 10) {
+       total.textContent = `0${slide.length}`;
+       current.textContent = `0${index}`;
+   } else {
+       total.textContent = slide.length;
+       current.textContent = index;
+   }
+
+   function deleteStr(str) {
+        return +str.replace(/\D/g, '');
+   }
+
+   function plusZero(cur) {
+    if (slide.length < 10) {
+         cur.textContent = `0${index}`;
+    } else {
+        cur.textContent = index;
+    }
+   }
+
+   function plusOne(ind) {
+    if (index == ind) {
         index = 1;
     } else {
-        index++;
+         index++;
+    }
+   }
+
+   next.addEventListener("click", () => {
+    if (offset == deleteStr(width) * (slide.length - 1)) {
+        offset = 0;
+    }else {
+        offset += deleteStr(width);
+    }
+    slidesFild.style.transform = `translateX(-${offset}px)`;
+
+    plusOne(slide.length);
+
+    plusZero(current);
+
+    dots.forEach(dot => dot.style.opacity = "0.5");
+    dots[index - 1].style.opacity = 1;
+   });
+
+   prev.addEventListener("click", () => {
+
+    if (offset == 0) {
+        offset = deleteStr(width) * (slide.length - 1);
+    }
+    else {
+        offset -= deleteStr(width);
+    }
+    slidesFild.style.transform = `translateX(-${offset}px)`;
+
+    if (index == 1) {
+        index = slide.length;
+    }else {
+        index--;
     }
 
-    if (slide.length < 10) {
-        current.textContent = `0${index}`;
-    } else {
-        current.textContent = index;
-    }
- });
+    plusZero(current);
 
- prev.addEventListener("click", () => {
-    if (offset == 0) {  
-        offset = +width.slice(0, width.length - 2) * (slide.length - 1);
-    } else {
-        offset -= +width.slice(0, width.length - 2);
-    }
+    dots.forEach(dot => dot.style.opacity = "0.5");
+    dots[index - 1].style.opacity = 1;
 
-   slidesFild.style.transform = `translateX(-${offset}px)`;
+   });
 
-   if (index == 1) {
-    index = slide.length;
-} else {
-    index--;
-}
+   dots.forEach(item => {
+    item.addEventListener("click", (e) => {
+        const slideTo = e.target.getAttribute('data-slide-to');
+        index = slideTo;
+        offset = deleteStr(width) * (slideTo - 1);
+        slidesFild.style.transform = `translateX(-${offset}px)`;
 
-if (slide.length < 10) {
-    current.textContent = `0${index}`;
-} else {
-    current.textContent = index;
-}
-});
+        plusZero(current);
+    
+        dots.forEach(dot => dot.style.opacity = "0.5");
+        dots[index - 1].style.opacity = 1;
 
+    });
+   });
 
-
-
-
-
-
-
-
-
+   
+   
 
 
 
@@ -428,6 +470,114 @@ if (slide.length < 10) {
 //   next.addEventListener("click", () => {
 //     plusSlide(1);
 //   });
+
+
+
+//calc
+
+
+const result = document.querySelector(".calculating__result span");
+let sex, height, weight, age, ratio;
+
+if (localStorage.getItem("sex")) {
+    sex = localStorage.getItem("sex");
+} else {
+    sex = "female";
+    localStorage.setItem("sex", "female");
+}
+if (localStorage.getItem("ratio")) {
+    ratio = localStorage.getItem("ratio");
+} else {
+    ratio = 1.375;
+    localStorage.setItem("ratio", 1.375);
+}
+
+function initLolalStor(selector, activClass) {
+    const element = document.querySelectorAll(selector);
+  element.forEach(elem => {
+    elem.classList.remove(activClass);
+    if (elem.getAttribute("id") === localStorage.getItem("sex")) {
+        elem.classList.add(activClass);
+    }
+    if (elem.getAttribute("data-ratio") === localStorage.getItem("ratio")) {
+        elem.classList.add(activClass);
+    }
+  });
+}
+initLolalStor("#gender div", 'calculating__choose-item_active');
+initLolalStor(".calculating__choose_big div", 'calculating__choose-item_active');
+
+function calcTotal() {
+    if (!sex || !height || !weight || !age || !ratio) {
+        result.textContent = "____";
+        return;
+    } 
+    if (sex === "female") {
+        result.textContent = Math.round((447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)) * ratio);
+    } else {
+        result.textContent = Math.round((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * ratio);
+    }
+
+}
+
+calcTotal();
+
+function getStatitInfo(selector, activClass) {
+    const element = document.querySelectorAll(selector);
+    element.forEach(elem => {
+        elem.addEventListener("click", (e) => {
+            if (elem.getAttribute("data-ratio")) {
+                ratio = e.target.getAttribute("data-ratio");
+                localStorage.setItem("ratio", e.target.getAttribute("data-ratio"));
+            } else {
+                sex = e.target.getAttribute("id");
+                localStorage.setItem("sex", e.target.getAttribute("id"));
+            }
+            element.forEach(elem => {
+                elem.classList.remove(activClass);
+            });
+            e.target.classList.add(activClass);
+            calcTotal();
+            console.log(sex, ratio);
+        });
+    });
+}
+getStatitInfo("#gender div", 'calculating__choose-item_active');
+getStatitInfo(".calculating__choose_big div", 'calculating__choose-item_active');
+
+function getDinamicInfo(selector) {
+    const input = document.querySelector(selector);
+
+    input.addEventListener("input", () => {
+        if (input.value.match(/\D/g)) {
+            input.style.border = "1px solid red";
+        } else {
+            input.style.border = "none";
+        }
+        switch(input.getAttribute("id")) {
+            case "height":
+                height = +input.value;
+                break;
+            case "weight":
+                weight = +input.value;
+                break;
+            case "age":
+                age = +input.value;
+                break;
+        }
+        calcTotal();
+    });
+}
+
+getDinamicInfo("#height");
+getDinamicInfo("#weight");
+getDinamicInfo("#age");
+
+
+
+
+
+
 
 
 });
